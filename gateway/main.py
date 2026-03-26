@@ -1,8 +1,7 @@
-from fastapi import FastAPI, Request, HTTPException, Header
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
-from typing import Optional
 
 from config import Settings
 
@@ -30,9 +29,7 @@ async def health():
 
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
-async def proxy(
-    path: str, request: Request, authorization: Optional[str] = Header(None)
-):
+async def proxy(path: str, request: Request):
     full_path = f"/{path}"
 
     target_base = None
@@ -50,8 +47,9 @@ async def proxy(
     body = await request.body()
 
     headers = {}
-    if authorization:
-        headers["Authorization"] = authorization
+    auth_header = request.headers.get("authorization")
+    if auth_header:
+        headers["Authorization"] = auth_header
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:

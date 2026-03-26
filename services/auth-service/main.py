@@ -1,6 +1,7 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from database import get_db, init_db
 from schemas import UserCreate, UserLogin, Token, UserResponse
@@ -63,7 +64,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
 
 
 @app.get("/auth/verify")
-def verify_token(authorization: str = None):
+def verify_token(authorization: Optional[str] = Header(None)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=401, detail="Missing or invalid authorization header"
@@ -83,7 +84,7 @@ def verify_token(authorization: str = None):
 
 
 @app.get("/auth/me", response_model=UserResponse)
-def get_me(authorization: str = None, db: Session = Depends(get_db)):
+def get_me(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)):
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing authorization header")
 
@@ -93,7 +94,11 @@ def get_me(authorization: str = None, db: Session = Depends(get_db)):
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-    user_id = int(payload.get("sub"))
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+
+    user_id = int(user_id_str)
     user = get_user_by_id(db, user_id)
 
     if not user:
