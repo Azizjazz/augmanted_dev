@@ -60,7 +60,7 @@ export default function RegisterPage() {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 rounded border text-sm"
+              className="w-full px-4 py-3 rounded border text-sm focus:ring-2 focus:ring-[#F22F46] focus:border-[#F22F46] outline-none"
               style={{ borderColor: '#E5E7EB', color: '#1A1A1A' }}
               placeholder="Choose a username"
               required
@@ -77,7 +77,7 @@ export default function RegisterPage() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded border text-sm"
+              className="w-full px-4 py-3 rounded border text-sm focus:ring-2 focus:ring-[#F22F46] focus:border-[#F22F46] outline-none"
               style={{ borderColor: '#E5E7EB', color: '#1A1A1A' }}
               placeholder="Enter your email"
               required
@@ -93,7 +93,7 @@ export default function RegisterPage() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded border text-sm"
+              className="w-full px-4 py-3 rounded border text-sm focus:ring-2 focus:ring-[#F22F46] focus:border-[#F22F46] outline-none"
               style={{ borderColor: '#E5E7EB', color: '#1A1A1A' }}
               placeholder="Create a password"
               required
@@ -110,7 +110,7 @@ export default function RegisterPage() {
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded border text-sm"
+              className="w-full px-4 py-3 rounded border text-sm focus:ring-2 focus:ring-[#F22F46] focus:border-[#F22F46] outline-none"
               style={{ borderColor: '#E5E7EB', color: '#1A1A1A' }}
               placeholder="Confirm your password"
               required

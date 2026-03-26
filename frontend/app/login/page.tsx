@@ -63,7 +63,7 @@ export default function LoginPage() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded border text-sm"
+              className="w-full px-4 py-3 rounded border text-sm focus:ring-2 focus:ring-[#F22F46] focus:border-[#F22F46] outline-none"
               style={{ borderColor: '#E5E7EB', color: '#1A1A1A' }}
               placeholder="Enter your password"
               required

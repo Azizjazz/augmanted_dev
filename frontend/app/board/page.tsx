@@ -43,15 +43,15 @@ export default function BoardPage() {
   return (
     <div className="min-h-screen bg-devoteam-grey">
       {/* Devoteam Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="sticky top-0 z-40" style={{ backgroundColor: '#F9F9F9', borderBottom: '1px solid #E5E7EB' }}>
         <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-          {/* Devoteam Logo */}
+          {/* Devoteam Logo - Larger and further left */}
           <div className="pl-2">
             <a href="/board">
               <img 
                 src="/assets/devoteam-logo.png" 
                 alt="Devoteam" 
-                className="h-12 w-auto"
+                className="h-16 w-auto"
               />
             </a>
           </div>
@@ -59,8 +59,8 @@ export default function BoardPage() {
           {/* Navigation */}
           <div className="flex items-center gap-6">
             <nav className="flex gap-1">
-              <span className="px-4 py-2 bg-devoteam-red text-white font-semibold text-sm rounded">Board</span>
-              <a href="/dashboard" className="px-4 py-2 text-devoteam-dark/60 hover:text-devoteam-dark hover:bg-devoteam-grey font-medium text-sm rounded transition-all">
+              <span className="px-4 py-2 bg-[#F22F46] text-white font-semibold text-sm rounded">Board</span>
+              <a href="/dashboard" className="px-4 py-2 font-semibold text-sm rounded transition-all" style={{ color: '#F22F46' }}>
                 Dashboard
               </a>
             </nav>
@@ -73,7 +73,8 @@ export default function BoardPage() {
             </span>
             <button
               onClick={logout}
-              className="px-4 py-2 text-devoteam-dark/70 hover:text-devoteam-dark hover:bg-devoteam-grey font-medium text-sm rounded transition-all"
+              className="px-4 py-2 font-semibold text-sm rounded transition-all"
+              style={{ color: '#F22F46' }}
             >
               Logout
             </button>
@@ -84,8 +85,8 @@ export default function BoardPage() {
       {/* Main Content */}
       <main className="p-6">
         {error && (
-          <div className="max-w-7xl mx-auto mb-4 p-4 bg-red-50 border border-devoteam-red/30 rounded text-devoteam-red text-sm">
-            {error}
+          <div className="max-w-7xl mx-auto mb-4 p-4 bg-red-50 border rounded" style={{ borderColor: '#F22F46' }}>
+            <p className="text-sm font-medium" style={{ color: '#F22F46' }}>{error}</p>
           </div>
         )}
         <KanbanBoard onAddTask={() => setShowModal(true)} />

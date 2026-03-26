@@ -70,7 +70,8 @@ export default function KanbanBoard({ onAddTask }: KanbanBoardProps) {
                 key={task.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, task)}
-                className="group bg-white border border-gray-200 rounded shadow-card hover:shadow-md transition-all cursor-grab active:cursor-grabbing overflow-hidden"
+                className="group bg-white border border-gray-200 rounded shadow-card hover:shadow-md hover:ring-2 transition-all cursor-grab active:cursor-grabbing overflow-hidden"
+                style={{ '--tw-ring-color': '#F22F46' } as React.CSSProperties}
               >
                 {/* Priority Color Bar - Left Side */}
                 <div className={`w-1 h-full absolute left-0 ${priorityColors[task.priority]}`} />
