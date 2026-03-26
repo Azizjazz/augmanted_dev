@@ -1,139 +1,151 @@
 # TaskBoard Pro 3.0 - Microservices Architecture
 
 ## Overview
-Migration from Monolith to Microservices architecture. Each service is independent, deployable, and fault-isolated.
+Full microservices architecture. Both backend and frontend are composed of independent, deployable services with fault isolation.
 
 ## Architecture Diagram
 
 ```mermaid
 graph TB
-    subgraph CLIENT["👤 Client Layer"]
-        FE["Next.js 15<br/>Frontend"]
-    end
-    
-    subgraph GATEWAY["🚪 API Gateway"]
-        GW["Gateway Service<br/>(Port 8000)"]
-    end
-    
-    subgraph SERVICES["🔧 Microservices"]
-        subgraph AUTH["Auth Service"]
-            AUTH_SVC["auth-service<br/>(Port 8001)"]
-            AUTH_DB["auth.db"]
+    subgraph FRONTEND["🎨 Frontend Microservices"]
+        subgraph FE_SERVICES["Frontend Services"]
+            AUTH_UI["Auth UI Service<br/>/login, /register"]
+            BOARD_UI["Board UI Service<br/>/board"]
+            DASHBOARD_UI["Dashboard UI Service<br/>/dashboard"]
         end
         
-        subgraph USER["User Service"]
-            USER_SVC["user-service<br/>(Port 8002)"]
-            USER_DB["user.db"]
-        end
-        
-        subgraph TASK["Task Service"]
-            TASK_SVC["task-service<br/>(Port 8003)"]
-            TASK_DB["task.db"]
-        end
-        
-        subgraph ANALYTICS["Analytics Service"]
-            ANALYTICS_SVC["analytics-service<br/>(Port 8004)"]
-            ANALYTICS_DB["analytics.db"]
+        subgraph FE_SHARED["Shared Services"]
+            AUTH_CTX["AuthContext<br/>(Auth State)"]
+            TASK_CTX["TaskContext<br/>(Task State)"]
+            AUTH_SVC["authService.ts"]
+            TASK_SVC["taskService.ts"]
+            ANALYTICS_SVC["analyticsService.ts"]
         end
     end
     
-    FE --> |HTTP| GW
-    GW --> |/auth| AUTH_SVC
-    GW --> |/users| USER_SVC
-    GW --> |/tasks| TASK_SVC
-    GW --> |/analytics| ANALYTICS_SVC
+    subgraph GATEWAY["🚪 API Gateway (8000)"]
+        GW["Gateway Service"]
+    end
     
-    AUTH_SVC --> AUTH_DB
-    USER_SVC --> USER_DB
-    TASK_SVC --> TASK_DB
-    ANALYTICS_SVC --> ANALYTICS_DB
+    subgraph BACKEND["⚙️ Backend Microservices"]
+        subgraph BACKEND_SERVICES["Backend Services"]
+            AUTH_SVC_B["Auth Service (8001)<br/>auth.db"]
+            TASK_SVC_B["Task Service (8003)<br/>task.db"]
+            ANALYTICS_SVC_B["Analytics Service (8004)<br/>analytics.db"]
+        end
+    end
+    
+    AUTH_UI --> AUTH_CTX
+    BOARD_UI --> TASK_CTX
+    DASHBOARD_UI --> TASK_CTX
+    AUTH_CTX --> AUTH_SVC
+    TASK_CTX --> TASK_SVC
+    TASK_CTX --> ANALYTICS_SVC
+    
+    AUTH_SVC --> GW
+    TASK_SVC --> GW
+    ANALYTICS_SVC --> GW
+    
+    GW --> AUTH_SVC_B
+    GW --> TASK_SVC_B
+    GW --> ANALYTICS_SVC_B
 ```
 
-## Service Specifications
+## Backend Microservices
 
-### 1. API Gateway Service (Port 8000)
-**Responsibility**: Single entry point, routing, authentication forwarding
-- Routes requests to appropriate microservices
-- Adds common headers
-- Rate limiting (optional)
-- Request validation
+### 1. API Gateway (Port 8000)
+**Responsibility**: Single entry point, routes requests
+- All frontend requests go through here
+- Forwards to appropriate backend service
 
 ### 2. Auth Service (Port 8001)
-**Responsibility**: Authentication, JWT token management
-- `POST /auth/register` - User registration
-- `POST /auth/login` - Get JWT token
-- `POST /auth/refresh` - Refresh token
-- `GET /auth/verify` - Verify token
-- Own database: `auth.db`
+**Database**: `auth.db`
+**Responsibility**: Authentication, JWT
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
+- `GET /auth/verify`
 
-### 3. User Service (Port 8002)
-**Responsibility**: User profile management
-- `GET /users/me` - Get current user
-- `PUT /users/me` - Update profile
-- `DELETE /users/me` - Delete account
-- Own database: `user.db`
+### 3. Task Service (Port 8003)
+**Database**: `task.db`
+**Responsibility**: Task CRUD
+- `GET /tasks`
+- `POST /tasks`
+- `PUT /tasks/{id}`
+- `DELETE /tasks/{id}`
+- `PATCH /tasks/{id}/move`
 
-### 4. Task Service (Port 8003)
-**Responsibility**: Kanban task CRUD operations
-- `GET /tasks` - List user tasks
-- `POST /tasks` - Create task
-- `GET /tasks/{id}` - Get task
-- `PUT /tasks/{id}` - Update task
-- `DELETE /tasks/{id}` - Delete task
-- `PATCH /tasks/{id}/move` - Move task
-- Own database: `task.db`
+### 4. Analytics Service (Port 8004)
+**Database**: `analytics.db`
+**Responsibility**: Statistics
+- `GET /analytics/stats`
+- `GET /analytics/heatmap`
+- `GET /analytics/distribution`
 
-### 5. Analytics Service (Port 8004)
-**Responsibility**: Dashboard statistics
-- `GET /analytics/stats` - Get user statistics
-- `GET /analytics/heatmap` - Priority heatmap data
-- `GET /analytics/distribution` - Status distribution
-- Own database: `analytics.db`
+## Frontend Microservices
+
+### UI Services (Pages)
+| Service | Route | Responsibility |
+|---------|-------|----------------|
+| Auth UI | `/login`, `/register` | Login/registration forms |
+| Board UI | `/board` | Kanban board view |
+| Dashboard UI | `/dashboard` | Analytics dashboard |
+
+### Shared Services
+| Service | Responsibility |
+|---------|----------------|
+| `authService.ts` | Auth API calls |
+| `taskService.ts` | Task API calls |
+| `analyticsService.ts` | Analytics API calls |
+| `AuthContext` | Auth state management |
+| `TaskContext` | Task state management |
 
 ## Fault Isolation
 
-| Service Down | Impact | Recovery |
-|-------------|--------|----------|
-| Gateway | Full outage | Restart gateway |
-| Auth Service | Can't login | Restart auth |
-| User Service | Can't view profile | Restart user |
-| Task Service | Can't manage tasks | Restart task |
-| Analytics | Dashboard fails | Restart analytics |
+| Service Down | Frontend Impact | Backend Impact |
+|-------------|-----------------|----------------|
+| Gateway | Full outage | - |
+| Auth Service | Can't login | - |
+| Task Service | Board broken | - |
+| Analytics Service | Dashboard shows error | - |
 
 ## Database Isolation
-Each service has its own SQLite database:
-- `auth.db` - Authentication data only
-- `user.db` - User profiles only
-- `task.db` - Tasks only
-- `analytics.db` - Cached stats only
 
-## Project Structure
+| Service | Database | Contains |
+|---------|----------|----------|
+| Auth | `auth.db` | Users, passwords |
+| Task | `task.db` | Tasks only |
+| Analytics | `analytics.db` | Stats cache |
 
-```
-taskboard-3.0/
-├── gateway/                 # API Gateway
-│   ├── main.py
-│   ├── requirements.txt
-│   └── .env
-├── services/
-│   ├── auth-service/        # Auth microservice
-│   ├── user-service/        # User microservice
-│   ├── task-service/        # Task microservice
-│   └── analytics-service/   # Analytics microservice
-├── frontend/               # Next.js frontend
-└── docker-compose.yml      # Orchestration
-```
-
-## Ports Mapping
+## Ports
 
 | Service | Port |
 |---------|------|
 | Gateway | 8000 |
 | Auth | 8001 |
-| User | 8002 |
 | Task | 8003 |
 | Analytics | 8004 |
 | Frontend | 3000 |
 
+## Project Structure
+
+```
+taskboard-3.0/
+├── gateway/                    # API Gateway
+├── services/
+│   ├── auth-service/          # Auth microservice
+│   ├── task-service/         # Task microservice
+│   └── analytics-service/    # Analytics microservice
+└── frontend/                  # Frontend microservices
+    ├── app/
+    │   ├── login/
+    │   ├── register/
+    │   ├── board/
+    │   └── dashboard/
+    ├── services/             # API client services
+    ├── context/              # State services
+    └── components/           # Shared UI components
+```
+
 ## Version
-3.0.0 (Microservices Release)
+3.0.0 (Full Microservices)
