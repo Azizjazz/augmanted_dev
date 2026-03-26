@@ -29,19 +29,116 @@ This version introduces a complete microservices architecture where each service
          │               │                │
          ▼               ▼                ▼
    ┌──────────┐    ┌──────────┐    ┌────────────┐
-   │ auth.db  │    │ task.db  │    │ analytics.db│
-   │ (users)  │    │ (tasks)  │    │ (stats)    │
+   │ auth.db  │    │ task.db  │    │analytics.db│
+   │ (users) │    │ (tasks)  │    │ (stats)   │
    └──────────┘    └──────────┘    └────────────┘
 ```
 
-## Services
+## 🚀 QUICK START (5 Steps)
 
-| Service | Port | Database | Responsibility |
-|---------|------|----------|----------------|
-| **API Gateway** | 8000 | - | Routes requests, single entry point |
-| **Auth Service** | 8001 | auth.db | JWT authentication, registration |
-| **Task Service** | 8003 | task.db | Kanban task CRUD operations |
-| **Analytics Service** | 8004 | analytics.db | Dashboard statistics |
+### Step 1: Open 5 Separate Terminal Windows
+
+You'll need **5 terminal windows** open (can be Command Prompt, PowerShell, or VS Code terminals).
+
+---
+
+### Step 2: Start Auth Service (Terminal 1)
+
+```cmd
+cd C:\Users\HP\Desktop\App-test\services\auth-service
+pip install -r requirements.txt -q
+python -m uvicorn main:app --host 0.0.0.0 --port 8001
+```
+
+✅ You should see: `Uvicorn running on http://0.0.0.0:8001`
+
+---
+
+### Step 3: Start Task Service (Terminal 2)
+
+```cmd
+cd C:\Users\HP\Desktop\App-test\services\task-service
+pip install -r requirements.txt -q
+python -m uvicorn main:app --host 0.0.0.0 --port 8003
+```
+
+✅ You should see: `Uvicorn running on http://0.0.0.0:8003`
+
+---
+
+### Step 4: Start Analytics Service (Terminal 3)
+
+```cmd
+cd C:\Users\HP\Desktop\App-test\services\analytics-service
+pip install -r requirements.txt -q
+python -m uvicorn main:app --host 0.0.0.0 --port 8004
+```
+
+✅ You should see: `Uvicorn running on http://0.0.0.0:8004`
+
+---
+
+### Step 5: Start API Gateway (Terminal 4)
+
+```cmd
+cd C:\Users\HP\Desktop\App-test\gateway
+pip install -r requirements.txt -q
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+✅ You should see: `Uvicorn running on http://0.0.0.0:8000`
+
+---
+
+### Step 6: Start Frontend (Terminal 5)
+
+```cmd
+cd C:\Users\HP\Desktop\App-test\frontend
+npm install
+npm run dev
+```
+
+✅ You should see: `Ready - Local: http://localhost:3000`
+
+---
+
+### 🎉 Open Your Browser!
+
+Go to: **http://localhost:3000**
+
+---
+
+## 📋 Services Summary
+
+| Terminal | Service | Port | URL |
+|----------|---------|------|-----|
+| 1 | Auth Service | 8001 | http://localhost:8001 |
+| 2 | Task Service | 8003 | http://localhost:8003 |
+| 3 | Analytics Service | 8004 | http://localhost:8004 |
+| 4 | API Gateway | 8000 | http://localhost:8000 |
+| 5 | Frontend | 3000 | http://localhost:3000 |
+
+---
+
+## 🔧 Troubleshooting
+
+### "Port already in use"
+```cmd
+# Find and kill the process using the port
+netstat -ano | findstr :8001
+taskkill /PID <PID> /F
+```
+
+### "Module not found"
+```cmd
+pip install fastapi uvicorn sqlalchemy pydantic pydantic-settings bcrypt python-jose python-multipart httpx passlib
+```
+
+### Services not connecting
+- Make sure all 4 backend services are running BEFORE starting the frontend
+- Check the Gateway logs for routing errors
+
+---
 
 ## Features
 
@@ -64,63 +161,6 @@ This version introduces a complete microservices architecture where each service
 | Auth Service | Can't login/register (tasks still work if logged in) |
 | Task Service | Can't manage tasks (auth works, dashboard fails) |
 | Analytics | Dashboard shows error (core features work) |
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- Python 3.10+
-- npm or yarn
-
-### 1. Start All Microservices
-
-#### Option A: Windows
-```bash
-start-services.bat
-```
-
-#### Option B: Linux/Mac
-```bash
-chmod +x start-services.sh
-./start-services.sh
-```
-
-#### Option C: Manual Start
-```bash
-# Terminal 1 - Auth Service
-cd services/auth-service
-pip install -r requirements.txt
-python -m uvicorn main:app --host 0.0.0.0 --port 8001
-
-# Terminal 2 - Task Service
-cd services/task-service
-pip install -r requirements.txt
-python -m uvicorn main:app --host 0.0.0.0 --port 8003
-
-# Terminal 3 - Analytics Service
-cd services/analytics-service
-pip install -r requirements.txt
-python -m uvicorn main:app --host 0.0.0.0 --port 8004
-
-# Terminal 4 - API Gateway
-cd gateway
-pip install -r requirements.txt
-python -m uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-### 2. Start Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 3. Open App
-
-- Frontend: http://localhost:3000
-- API Gateway: http://localhost:8000
 
 ## API Endpoints
 
@@ -184,15 +224,37 @@ taskboard-3.0/
 │       ├── schemas.py
 │       ├── config.py
 │       └── analytics.db
-├── frontend/                  # Next.js 15 Frontend
-│   ├── app/
-│   ├── components/
-│   ├── context/
-│   └── lib/
+├── frontend/                  # Next.js 15 Frontend (Micro-Frontend Services)
+│   ├── app/                   # Page Services
+│   │   ├── login/            # Auth UI Service
+│   │   ├── register/         # Registration UI Service
+│   │   ├── board/            # Kanban UI Service
+│   │   └── dashboard/        # Analytics UI Service
+│   ├── components/           # Shared Components Service
+│   │   ├── KanbanBoard.tsx   # Board Component
+│   │   └── TaskModal.tsx     # Modal Component
+│   ├── context/              # State Management Services
+│   │   ├── AuthContext.tsx    # Auth State Service
+│   │   └── TaskContext.tsx   # Task State Service
+│   ├── lib/                  # API Client Service
+│   │   └── api.ts
+│   └── types/                # Type Definitions
 ├── docker-compose.yml         # Docker orchestration
 ├── start-services.bat         # Windows startup script
 └── start-services.sh          # Unix startup script
 ```
+
+## Frontend Micro-Services Architecture
+
+The frontend is structured as **Micro-Frontend Services**:
+
+| Service | Path | Responsibility |
+|---------|------|----------------|
+| Auth UI Service | `app/login/`, `app/register/` | User authentication screens |
+| Kanban UI Service | `app/board/` | Kanban board with drag-drop |
+| Analytics UI Service | `app/dashboard/` | Statistics dashboard |
+| State Management | `context/` | Global state services |
+| API Client | `lib/api.ts` | Backend communication |
 
 ## Environment Variables
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
-import { login as apiLogin, register as apiRegister, getMe } from '../lib/api';
+import { login as authLogin, register as authRegister, getMe } from '../services/authService';
 
 interface User {
   id: number;
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUser = async (authToken: string) => {
     try {
-      const userData = await getMe();
+      const userData = await getMe(authToken);
       setUser(userData);
     } catch {
       localStorage.removeItem(TOKEN_KEY);
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await apiLogin({ username, password });
+      const response = await authLogin({ username, password });
       localStorage.setItem(TOKEN_KEY, response.access_token);
       setToken(response.access_token);
       await fetchUser(response.access_token);
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      await apiRegister({ username, email, password });
+      await authRegister({ username, email, password });
       return await login(username, password);
     } catch (err: any) {
       setError(err.message || 'Registration failed');

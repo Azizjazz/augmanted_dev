@@ -2,7 +2,14 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { Task, CreateTaskInput, UpdateTaskInput, MoveTaskInput } from '../types';
-import * as api from '../lib/api';
+import { 
+  fetchTasks as fetchTasksService, 
+  createTask as createTaskService,
+  updateTask as updateTaskService,
+  deleteTask as deleteTaskService,
+  moveTask as moveTaskService
+} from '../services/taskService';
+import { useAuth } from './AuthContext';
 
 interface TaskState {
   tasks: Task[];
@@ -21,6 +28,7 @@ interface TaskContextValue extends TaskState {
 const TaskContext = createContext<TaskContextValue | undefined>(undefined);
 
 export function TaskProvider({ children }: { children: ReactNode }) {
+  const { token } = useAuth();
   const [state, setState] = useState<TaskState>({
     tasks: [],
     isLoading: false,
@@ -28,9 +36,10 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   });
 
   const fetchTasks = useCallback(async () => {
+    if (!token) return;
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      const tasks = await api.fetchTasks();
+      const tasks = await fetchTasksService(token);
       setState({ tasks, isLoading: false, error: null });
     } catch (error) {
       setState(prev => ({
@@ -39,12 +48,13 @@ export function TaskProvider({ children }: { children: ReactNode }) {
         error: error instanceof Error ? error.message : 'Failed to fetch tasks',
       }));
     }
-  }, []);
+  }, [token]);
 
   const addTask = useCallback(async (task: CreateTaskInput) => {
+    if (!token) return;
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      const newTask = await api.createTask(task);
+      const newTask = await createTaskService(token, task);
       setState(prev => ({
         ...prev,
         tasks: [...prev.tasks, newTask],
@@ -58,12 +68,13 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }));
       throw error;
     }
-  }, []);
+  }, [token]);
 
   const updateTask = useCallback(async (id: number, task: UpdateTaskInput) => {
+    if (!token) return;
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      const updatedTask = await api.updateTask(id, task);
+      const updatedTask = await updateTaskService(token, id, task);
       setState(prev => ({
         ...prev,
         tasks: prev.tasks.map(t => (t.id === id ? updatedTask : t)),
@@ -77,12 +88,13 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }));
       throw error;
     }
-  }, []);
+  }, [token]);
 
   const deleteTask = useCallback(async (id: number) => {
+    if (!token) return;
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      await api.deleteTask(id);
+      await deleteTaskService(token, id);
       setState(prev => ({
         ...prev,
         tasks: prev.tasks.filter(t => t.id !== id),
@@ -96,12 +108,13 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }));
       throw error;
     }
-  }, []);
+  }, [token]);
 
   const moveTask = useCallback(async (id: number, data: MoveTaskInput) => {
+    if (!token) return;
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     try {
-      const updatedTask = await api.moveTask(id, data);
+      const updatedTask = await moveTaskService(token, id, data);
       setState(prev => ({
         ...prev,
         tasks: prev.tasks.map(t => (t.id === id ? updatedTask : t)),
@@ -115,7 +128,7 @@ export function TaskProvider({ children }: { children: ReactNode }) {
       }));
       throw error;
     }
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     fetchTasks();
