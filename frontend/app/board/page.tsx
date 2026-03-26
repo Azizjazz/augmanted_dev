@@ -48,7 +48,7 @@ export default function BoardPage() {
           {/* Devoteam Logo */}
           <a href="/board">
             <img 
-              src="/assets/devoteam-logo.svg" 
+              src="/assets/devoteam-logo.png" 
               alt="Devoteam" 
               className="h-8 w-auto"
             />
