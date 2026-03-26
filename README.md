@@ -1,34 +1,47 @@
-# TaskBoard Pro
+# TaskBoard Pro 3.0
 
-A high-performance, portfolio-ready Kanban board with a premium Glassmorphism UI.
+A high-performance, portfolio-ready Kanban board with a premium Glassmorphism UI. Now with **Microservices Architecture**!
 
-## Multi-Agent Team Setup
+## Version 3.0 - Microservices
 
-This project is developed using a 6-agent governance system:
+This version introduces a complete microservices architecture where each service is independent, deployable, and fault-isolated.
 
-| Agent | Role | Responsibility |
-|-------|------|----------------|
-| **#00 Specifier** | Product Architect | Requirements, SSoT, Milestones |
-| **#01 Orchestrator** | Lead Architect | API contracts, DB schema, State structure |
-| **#02 Frontend** | UI Engineer | Next.js 15, React 19, dnd-kit |
-| **#03 Backend** | API Engineer | FastAPI, Python, SQLite |
-| **#04 QA** | Test Engineer | Jest/PyTest, E2E validation |
-| **#05 DevOps** | Release Manager | CI/CD, Docs, Versioning |
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENT (Browser)                          │
+└─────────────────────────────┬───────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      API GATEWAY (Port 8000)                    │
+│              Single Entry Point • Routes Requests                │
+└──────────┬──────────────┬───────────────┬──────────────────────┘
+           │              │               │
+           ▼              ▼               ▼
+┌─────────────────┐ ┌──────────┐ ┌─────────────────┐
+│ Auth Service    │ │ Task     │ │ Analytics       │
+│ (Port 8001)    │ │ Service  │ │ Service         │
+│                 │ │(8003)    │ │ (Port 8004)     │
+│ JWT Auth        │ │          │ │                 │
+│ Registration    │ │ Kanban   │ │ Dashboard       │
+│ Login          │ │ CRUD     │ │ Stats           │
+└────────┬────────┘ └────┬─────┘ └────────┬────────┘
+         │               │                │
+         ▼               ▼                ▼
+   ┌──────────┐    ┌──────────┐    ┌────────────┐
+   │ auth.db  │    │ task.db  │    │ analytics.db│
+   │ (users)  │    │ (tasks)  │    │ (stats)    │
+   └──────────┘    └──────────┘    └────────────┘
+```
 
-## Tech Stack
+## Services
 
-### Frontend
-- Next.js 15
-- React 19
-- Tailwind CSS
-- dnd-kit (Drag & Drop)
-- TypeScript
-
-### Backend
-- FastAPI
-- Python 3.10+
-- SQLAlchemy
-- SQLite
+| Service | Port | Database | Responsibility |
+|---------|------|----------|----------------|
+| **API Gateway** | 8000 | - | Routes requests, single entry point |
+| **Auth Service** | 8001 | auth.db | JWT authentication, registration |
+| **Task Service** | 8003 | task.db | Kanban task CRUD operations |
+| **Analytics Service** | 8004 | analytics.db | Dashboard statistics |
 
 ## Features
 
@@ -37,71 +50,20 @@ This project is developed using a 6-agent governance system:
 - Priority color coding: High (Red), Medium (Yellow), Low (Blue)
 - Fluid drag & drop animations
 - Glassmorphism UI design
-- RESTful API backend
 - **JWT Authentication**
 - **User registration and login**
 - **Protected routes**
 - **User isolation** - Each user sees only their own tasks
 - **Dashboard View** - Analytics with status distribution and severity heatmap
-- **Task deletion** - Click the X button on task cards to remove them
 
-## Views
+## Fault Isolation
 
-### Board View (`/board`)
-Default Kanban board with drag-and-drop task management across columns.
-
-### Dashboard View (`/dashboard`)
-Analytics dashboard showing:
-- Total task count
-- Status distribution bar chart
-- Severity heatmap (High/Medium/Low priority counts with glowing borders)
-
-### Toggling Between Views
-Use the navigation links in the header:
-- Click **"Board"** to switch to Kanban board
-- Click **"Dashboard"** to switch to Analytics view
-
-Both views require authentication.
-
-## User Authentication Flow
-
-```
-/ (root) → Redirects to /login
-/login     → Login form (redirects to /board on success)
-/register → Registration form (redirects to /board on success)
-/board    → Protected Kanban board (redirects to /login if not authenticated)
-/dashboard → Protected Analytics dashboard (redirects to /login if not authenticated)
-```
-
-### Quick Auth Test
-1. Visit http://localhost:3000 (redirects to /login)
-2. Click "Sign up" to go to /register
-3. Create account with username, email, password
-4. You'll be logged in and redirected to /board
-5. Click "Dashboard" in header to view task statistics
-6. Click "Logout" to clear session and return to /login
-
-## Project Structure
-
-```
-taskboard-pro/
-├── frontend/              # Next.js 15 application
-│   ├── app/              # App router (layout.tsx, page.tsx)
-│   ├── components/       # React components
-│   ├── context/          # TaskContext for global state
-│   ├── lib/              # API client
-│   └── types/            # TypeScript interfaces
-├── backend/              # FastAPI application
-│   ├── routers/          # API route handlers
-│   ├── main.py           # Application entry point
-│   ├── models.py         # SQLAlchemy models
-│   ├── schemas.py        # Pydantic schemas
-│   ├── crud.py           # Database operations
-│   └── taskboard.db      # SQLite database
-├── requirements.md      # Project requirements
-├── ARCHITECTURE.md       # System architecture
-└── PASS_CRITERIA.md     # Sprint 1 acceptance criteria
-```
+| Service Down | Impact |
+|-------------|--------|
+| Gateway | Full outage (all requests fail) |
+| Auth Service | Can't login/register (tasks still work if logged in) |
+| Task Service | Can't manage tasks (auth works, dashboard fails) |
+| Analytics | Dashboard shows error (core features work) |
 
 ## Getting Started
 
@@ -111,19 +73,43 @@ taskboard-pro/
 - Python 3.10+
 - npm or yarn
 
-### Backend Setup
+### 1. Start All Microservices
 
+#### Option A: Windows
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn main:app --reload
+start-services.bat
 ```
 
-API will be available at: http://localhost:8000
+#### Option B: Linux/Mac
+```bash
+chmod +x start-services.sh
+./start-services.sh
+```
 
-### Frontend Setup
+#### Option C: Manual Start
+```bash
+# Terminal 1 - Auth Service
+cd services/auth-service
+pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 8001
+
+# Terminal 2 - Task Service
+cd services/task-service
+pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 8003
+
+# Terminal 3 - Analytics Service
+cd services/analytics-service
+pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 8004
+
+# Terminal 4 - API Gateway
+cd gateway
+pip install -r requirements.txt
+python -m uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+### 2. Start Frontend
 
 ```bash
 cd frontend
@@ -131,9 +117,14 @@ npm install
 npm run dev
 ```
 
-App will be available at: http://localhost:3000
+### 3. Open App
+
+- Frontend: http://localhost:3000
+- API Gateway: http://localhost:8000
 
 ## API Endpoints
+
+All endpoints are accessed through the API Gateway at `http://localhost:8000`
 
 ### Authentication
 
@@ -142,48 +133,107 @@ App will be available at: http://localhost:3000
 | POST | `/api/v1/auth/register` | Register new user |
 | POST | `/api/v1/auth/login` | Login and get JWT token |
 | GET | `/api/v1/auth/me` | Get current user info |
+| GET | `/api/v1/auth/verify` | Verify JWT token |
 
 ### Tasks (Protected - requires JWT)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/v1/tasks` | Get logged-in user's tasks |
-| GET | `/api/v1/tasks/{id}` | Get task by ID (own task only) |
+| GET | `/api/v1/tasks/{id}` | Get task by ID |
 | POST | `/api/v1/tasks` | Create new task |
 | PUT | `/api/v1/tasks/{id}` | Update task |
 | DELETE | `/api/v1/tasks/{id}` | Delete task |
 | PATCH | `/api/v1/tasks/{id}/move` | Move task to column |
-| GET | `/api/v1/tasks/stats` | Get task statistics |
 
-> **Note:** All task endpoints return only the logged-in user's tasks. Include header: `Authorization: Bearer <token>`
+### Analytics (Protected - requires JWT)
 
-## Milestones
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/analytics/stats` | Get task statistics |
+| GET | `/api/v1/analytics/heatmap` | Priority heatmap data |
+| GET | `/api/v1/analytics/distribution` | Status distribution % |
 
-- [x] **Sprint 1**: Foundation (Backend API, Frontend Setup, TaskContext)
-- [x] **Sprint 2**: Authentication (JWT, Login, Register, Protected Routes)
-- [x] **Sprint 3**: Kanban Core (Drag & Drop, Task Modal, 4 Columns)
-- [x] **Sprint 4**: UI Polish (Glassmorphism, Dropdown Visibility, Priority Glows)
-- [x] **Sprint 5**: Analytics Dashboard (Stats endpoint, Dashboard view, Delete feature)
-- [ ] **Sprint 6**: Enhanced Features
+> **Note:** Include header `Authorization: Bearer <token>` for protected endpoints.
+
+## Project Structure
+
+```
+taskboard-3.0/
+├── gateway/                    # API Gateway (Port 8000)
+│   ├── main.py
+│   └── requirements.txt
+├── services/
+│   ├── auth-service/          # Auth Service (Port 8001)
+│   │   ├── main.py
+│   │   ├── auth.py
+│   │   ├── crud.py
+│   │   ├── database.py
+│   │   ├── schemas.py
+│   │   ├── config.py
+│   │   └── auth.db
+│   ├── task-service/          # Task Service (Port 8003)
+│   │   ├── main.py
+│   │   ├── crud.py
+│   │   ├── database.py
+│   │   ├── schemas.py
+│   │   ├── config.py
+│   │   └── task.db
+│   └── analytics-service/     # Analytics Service (Port 8004)
+│       ├── main.py
+│       ├── schemas.py
+│       ├── config.py
+│       └── analytics.db
+├── frontend/                  # Next.js 15 Frontend
+│   ├── app/
+│   ├── components/
+│   ├── context/
+│   └── lib/
+├── docker-compose.yml         # Docker orchestration
+├── start-services.bat         # Windows startup script
+└── start-services.sh          # Unix startup script
+```
 
 ## Environment Variables
 
-### Frontend (.env.local)
-```
-NEXT_PUBLIC_API_URL=http://localhost:8000
+### Gateway (.env)
+```env
+AUTH_SERVICE_URL=http://localhost:8001
+TASK_SERVICE_URL=http://localhost:8003
+ANALYTICS_SERVICE_URL=http://localhost:8004
 ```
 
-### Backend (.env)
-```
-DATABASE_URL=sqlite:///./taskboard.db
-SECRET_KEY=your-secret-key-here
+### Auth Service (.env)
+```env
+DATABASE_URL=sqlite:///./auth.db
 JWT_SECRET=your-jwt-secret-key-min-32-chars
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-DEBUG=True
 ```
 
-> **Important:** Generate a strong `JWT_SECRET` key (min 32 characters) for production use.
+### Frontend (.env.local)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+## Multi-Agent Team
+
+This project is developed using a 6-agent governance system:
+
+| Agent | Role | Responsibility |
+|-------|------|----------------|
+| **#00 Specifier** | Product Architect | Requirements, SSoT, Milestones |
+| **#01 Orchestrator** | Lead Architect | API contracts, DB schema |
+| **#02 Frontend** | UI Engineer | Next.js 15, React 19, dnd-kit |
+| **#03 Backend** | API Engineer | FastAPI microservices |
+| **#04 QA** | Test Engineer | Jest/PyTest, E2E validation |
+| **#05 DevOps** | Release Manager | Git versioning, Docs |
+
+## Version History
+
+- **v3.0.0**: Microservices Architecture (current)
+- **v2.x.x**: Monolith with FastAPI
+- **v1.x.x**: Initial release
 
 ## License
 
