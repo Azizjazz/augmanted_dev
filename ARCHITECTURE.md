@@ -1,74 +1,139 @@
-# TaskBoard Pro - Golden Path Architecture
+# TaskBoard Pro 3.0 - Microservices Architecture
 
-## Schema Specification
-- **Task Table**: MUST include `user_id` (ForeignKey to users.id) and `status` field
-- All task queries MUST filter by `user_id` for data isolation
+## Overview
+Migration from Monolith to Microservices architecture. Each service is independent, deployable, and fault-isolated.
 
-## API Conventions
-- **Prefix**: All routes MUST use the `/api/v1/` prefix
-- **Auth Required**: All task endpoints require Bearer token authentication
+## Architecture Diagram
 
-## CORS Configuration
-- Allow origins: `http://localhost:3000`, `http://127.0.0.1:3000`
-- Allow credentials: `true`
-- Allow all methods and headers including `Authorization`
-
-## API Contracts
-
-### Authentication (`/api/v1/auth/*`)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/auth/register` | Register new user |
-| POST | `/api/v1/auth/login` | Login (returns JWT) |
-| GET | `/api/v1/auth/me` | Get current user |
-
-### Tasks (`/api/v1/tasks/*`)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/v1/tasks` | List user's tasks |
-| GET | `/api/v1/tasks/{id}` | Get single task |
-| POST | `/api/v1/tasks` | Create new task |
-| PUT | `/api/v1/tasks/{id}` | Update task |
-| DELETE | `/api/v1/tasks/{id}` | Delete task |
-| PATCH | `/api/v1/tasks/{id}/move` | Move task to column |
-| GET | `/api/v1/tasks/stats` | Get task statistics |
-
-### Stats Response Schema
-```json
-{
-  "total_tasks": 10,
-  "status_counts": { "backlog": 3, "in_progress": 4, "review": 2, "done": 1 },
-  "priority_counts": { "high": 2, "medium": 5, "low": 3 }
-}
+```mermaid
+graph TB
+    subgraph CLIENT["👤 Client Layer"]
+        FE["Next.js 15<br/>Frontend"]
+    end
+    
+    subgraph GATEWAY["🚪 API Gateway"]
+        GW["Gateway Service<br/>(Port 8000)"]
+    end
+    
+    subgraph SERVICES["🔧 Microservices"]
+        subgraph AUTH["Auth Service"]
+            AUTH_SVC["auth-service<br/>(Port 8001)"]
+            AUTH_DB["auth.db"]
+        end
+        
+        subgraph USER["User Service"]
+            USER_SVC["user-service<br/>(Port 8002)"]
+            USER_DB["user.db"]
+        end
+        
+        subgraph TASK["Task Service"]
+            TASK_SVC["task-service<br/>(Port 8003)"]
+            TASK_DB["task.db"]
+        end
+        
+        subgraph ANALYTICS["Analytics Service"]
+            ANALYTICS_SVC["analytics-service<br/>(Port 8004)"]
+            ANALYTICS_DB["analytics.db"]
+        end
+    end
+    
+    FE --> |HTTP| GW
+    GW --> |/auth| AUTH_SVC
+    GW --> |/users| USER_SVC
+    GW --> |/tasks| TASK_SVC
+    GW --> |/analytics| ANALYTICS_SVC
+    
+    AUTH_SVC --> AUTH_DB
+    USER_SVC --> USER_DB
+    TASK_SVC --> TASK_DB
+    ANALYTICS_SVC --> ANALYTICS_DB
 ```
 
-## Tech Stack
-- **Frontend**: Next.js 15, React 19, Tailwind CSS, Glassmorphism UI
-- **Backend**: FastAPI (Python 3.10+), SQLAlchemy, Pydantic
-- **Database**: SQLite (taskboard.db)
+## Service Specifications
+
+### 1. API Gateway Service (Port 8000)
+**Responsibility**: Single entry point, routing, authentication forwarding
+- Routes requests to appropriate microservices
+- Adds common headers
+- Rate limiting (optional)
+- Request validation
+
+### 2. Auth Service (Port 8001)
+**Responsibility**: Authentication, JWT token management
+- `POST /auth/register` - User registration
+- `POST /auth/login` - Get JWT token
+- `POST /auth/refresh` - Refresh token
+- `GET /auth/verify` - Verify token
+- Own database: `auth.db`
+
+### 3. User Service (Port 8002)
+**Responsibility**: User profile management
+- `GET /users/me` - Get current user
+- `PUT /users/me` - Update profile
+- `DELETE /users/me` - Delete account
+- Own database: `user.db`
+
+### 4. Task Service (Port 8003)
+**Responsibility**: Kanban task CRUD operations
+- `GET /tasks` - List user tasks
+- `POST /tasks` - Create task
+- `GET /tasks/{id}` - Get task
+- `PUT /tasks/{id}` - Update task
+- `DELETE /tasks/{id}` - Delete task
+- `PATCH /tasks/{id}/move` - Move task
+- Own database: `task.db`
+
+### 5. Analytics Service (Port 8004)
+**Responsibility**: Dashboard statistics
+- `GET /analytics/stats` - Get user statistics
+- `GET /analytics/heatmap` - Priority heatmap data
+- `GET /analytics/distribution` - Status distribution
+- Own database: `analytics.db`
+
+## Fault Isolation
+
+| Service Down | Impact | Recovery |
+|-------------|--------|----------|
+| Gateway | Full outage | Restart gateway |
+| Auth Service | Can't login | Restart auth |
+| User Service | Can't view profile | Restart user |
+| Task Service | Can't manage tasks | Restart task |
+| Analytics | Dashboard fails | Restart analytics |
+
+## Database Isolation
+Each service has its own SQLite database:
+- `auth.db` - Authentication data only
+- `user.db` - User profiles only
+- `task.db` - Tasks only
+- `analytics.db` - Cached stats only
 
 ## Project Structure
+
 ```
-/backend
-  /routers - API route handlers (auth.py, tasks.py)
-  models.py - SQLAlchemy models (User, Task)
-  schemas.py - Pydantic schemas
-  crud.py - Database operations
-  main.py - FastAPI app entry point
-  
-/frontend
-  /app - Next.js pages (login, register, board)
-  /components - React components (KanbanBoard, TaskModal)
-  /context - React contexts (AuthContext, TaskContext)
-  /lib - API client (api.ts)
-  /types - TypeScript types
+taskboard-3.0/
+├── gateway/                 # API Gateway
+│   ├── main.py
+│   ├── requirements.txt
+│   └── .env
+├── services/
+│   ├── auth-service/        # Auth microservice
+│   ├── user-service/        # User microservice
+│   ├── task-service/        # Task microservice
+│   └── analytics-service/   # Analytics microservice
+├── frontend/               # Next.js frontend
+└── docker-compose.yml      # Orchestration
 ```
 
-## Priority Color System
-- High: `border-red-500/50` with red glow
-- Medium: `border-yellow-500/50` with yellow glow  
-- Low: `border-blue-500/50` with blue glow
+## Ports Mapping
 
-## Glassmorphism Specification
-- Base class: `backdrop-blur-md bg-white/10`
-- Card variant: `glass-card` with enhanced glass effect
+| Service | Port |
+|---------|------|
+| Gateway | 8000 |
+| Auth | 8001 |
+| User | 8002 |
+| Task | 8003 |
+| Analytics | 8004 |
+| Frontend | 3000 |
+
+## Version
+3.0.0 (Microservices Release)
