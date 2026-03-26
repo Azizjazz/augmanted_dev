@@ -41,32 +41,26 @@ export default function KanbanBoard({ onAddTask }: KanbanBoardProps) {
     tasks.filter((t) => t.status === status).sort((a, b) => a.position - b.position);
 
   const priorityColors: Record<TaskPriority, string> = {
-    high: 'from-red-500/20 to-red-600/20 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)]',
-    medium: 'from-yellow-500/20 to-yellow-600/20 border-yellow-500/50 shadow-[0_0_15px_rgba(234,179,8,0.3)]',
-    low: 'from-blue-500/20 to-blue-600/20 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.3)]',
-  };
-
-  const priorityDots: Record<TaskPriority, string> = {
-    high: 'bg-red-500',
-    medium: 'bg-yellow-500',
-    low: 'bg-blue-500',
+    high: 'bg-devoteam-red',
+    medium: 'bg-devoteam-dark',
+    low: 'bg-gray-400',
   };
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="flex gap-6 overflow-x-auto pb-4">
       {COLUMNS.map((column) => (
         <div
           key={column.id}
-          className={`flex-shrink-0 w-72 backdrop-blur-md bg-white/10 rounded-xl p-4 min-h-[500px] transition-colors ${
-            dragOverColumn === column.id ? 'bg-white/15' : ''
+          className={`flex-shrink-0 w-80 rounded-lg bg-white border border-gray-200 p-4 min-h-[600px] transition-colors ${
+            dragOverColumn === column.id ? 'border-devoteam-red/50 bg-gray-50' : ''
           }`}
           onDragOver={(e) => handleDragOver(e, column.id)}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, column.id)}
         >
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white font-semibold text-lg">{column.title}</h3>
-            <span className="bg-white/20 text-white/80 text-sm px-2 py-0.5 rounded-full">
+            <h3 className="text-devoteam-dark font-bold text-base">{column.title}</h3>
+            <span className="bg-devoteam-grey text-devoteam-dark text-xs font-semibold px-2.5 py-1 rounded">
               {getTasksByStatus(column.id).length}
             </span>
           </div>
@@ -76,27 +70,39 @@ export default function KanbanBoard({ onAddTask }: KanbanBoardProps) {
                 key={task.id}
                 draggable
                 onDragStart={(e) => handleDragStart(e, task)}
-                className={`glass-card bg-gradient-to-br ${priorityColors[task.priority]} border p-3 rounded-lg cursor-grab active:cursor-grabbing hover:scale-[1.02] transition-transform`}
+                className="group bg-white border border-gray-200 rounded shadow-card hover:shadow-md transition-all cursor-grab active:cursor-grabbing overflow-hidden"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <span className={`w-2 h-2 rounded-full mt-1.5 ${priorityDots[task.priority]}`} />
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className="text-white/50 hover:text-red-400 text-sm"
-                  >
-                    ×
-                  </button>
+                {/* Priority Color Bar - Left Side */}
+                <div className={`w-1 h-full absolute left-0 ${priorityColors[task.priority]}`} />
+                
+                <div className="pl-3 pr-3 pt-3 pb-2">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className={`w-2 h-2 rounded-sm ${priorityColors[task.priority]}`} />
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="text-gray-400 hover:text-devoteam-red text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <h4 className="text-devoteam-dark font-semibold text-sm mb-1">{task.title}</h4>
+                  {task.description && (
+                    <p className="text-gray-500 text-xs line-clamp-2">{task.description}</p>
+                  )}
+                  <div className={`mt-2 inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                    task.priority === 'high' ? 'bg-devoteam-red/10 text-devoteam-red' :
+                    task.priority === 'medium' ? 'bg-devoteam-dark/10 text-devoteam-dark' :
+                    'bg-gray-100 text-gray-500'
+                  }`}>
+                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                  </div>
                 </div>
-                <h4 className="text-white font-medium text-sm mb-1">{task.title}</h4>
-                {task.description && (
-                  <p className="text-white/60 text-xs line-clamp-2">{task.description}</p>
-                )}
               </div>
             ))}
           </div>
           <button
             onClick={onAddTask}
-            className="w-full mt-4 py-2 border border-dashed border-white/30 text-white/60 hover:text-white hover:border-white/50 rounded-lg transition-colors text-sm"
+            className="w-full mt-4 py-2.5 border border-dashed border-gray-300 text-gray-500 hover:text-devoteam-dark hover:border-devoteam-dark rounded text-sm font-medium transition-colors"
           >
             + Add Task
           </button>

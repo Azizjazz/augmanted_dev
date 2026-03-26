@@ -1,32 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --gradient-start: #667eea;
-  --gradient-end: #764ba2;
+  --devoteam-red: #F22F46;
+  --devoteam-dark: #1A1A1A;
+  --devoteam-grey: #F8F9FA;
 }
 
 body {
-  background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-  min-height: 100vh;
-}
-
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  transition: all 0.2s ease;
-}
-
-.glass-card:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  font-family: 'Inter', system-ui, sans-serif;
 }

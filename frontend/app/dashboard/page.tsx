@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import * as api from '@/lib/api';
+import { useTaskContext } from '@/context/TaskContext';
 import { TaskStats, TaskStatus, TaskPriority, COLUMNS } from '@/types';
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
@@ -20,29 +20,22 @@ const PRIORITY_LABELS: Record<TaskPriority, string> = {
 };
 
 const STATUS_COLORS: Record<TaskStatus, string> = {
-  backlog: 'from-slate-500/40 to-slate-600/40 border-slate-500/50',
-  in_progress: 'from-blue-500/40 to-blue-600/40 border-blue-500/50',
-  review: 'from-purple-500/40 to-purple-600/40 border-purple-500/50',
-  done: 'from-green-500/40 to-green-600/40 border-green-500/50',
+  backlog: 'bg-gray-400',
+  in_progress: 'bg-blue-500',
+  review: 'bg-purple-500',
+  done: 'bg-green-500',
 };
 
 const PRIORITY_COLORS: Record<TaskPriority, string> = {
-  high: 'from-red-500/40 to-red-600/40 border-red-500/50',
-  medium: 'from-yellow-500/40 to-yellow-600/40 border-yellow-500/50',
-  low: 'from-blue-500/40 to-blue-600/40 border-blue-500/50',
-};
-
-const PRIORITY_HEAT: Record<TaskPriority, string> = {
-  high: 'shadow-[0_0_20px_rgba(239,68,68,0.4)]',
-  medium: 'shadow-[0_0_20px_rgba(234,179,8,0.4)]',
-  low: 'shadow-[0_0_20px_rgba(59,130,246,0.4)]',
+  high: 'border-l-devoteam-red',
+  medium: 'border-l-devoteam-dark',
+  low: 'border-l-gray-400',
 };
 
 export default function DashboardPage() {
   const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
+  const { tasks } = useTaskContext();
   const router = useRouter();
-  const [stats, setStats] = useState<TaskStats | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -51,48 +44,63 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      api.fetchStats()
-        .then(setStats)
-        .catch(() => setError('Failed to load stats'))
-        .finally(() => setLoading(false));
-    }
-  }, [isAuthenticated]);
-
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-slate-900">
-        <div className="glass-card p-8 rounded-2xl">
-          <p className="text-white text-lg">Loading dashboard...</p>
+      <div className="min-h-screen bg-devoteam-grey flex items-center justify-center">
+        <div className="bg-white shadow-card rounded-lg p-8">
+          <p className="text-devoteam-dark font-medium">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
-  if (!isAuthenticated || !stats) {
+  if (!isAuthenticated) {
     return null;
   }
 
+  const stats: TaskStats = {
+    total_tasks: tasks.length,
+    status_counts: {
+      backlog: tasks.filter(t => t.status === 'backlog').length,
+      in_progress: tasks.filter(t => t.status === 'in_progress').length,
+      review: tasks.filter(t => t.status === 'review').length,
+      done: tasks.filter(t => t.status === 'done').length,
+    },
+    priority_counts: {
+      high: tasks.filter(t => t.priority === 'high').length,
+      medium: tasks.filter(t => t.priority === 'medium').length,
+      low: tasks.filter(t => t.priority === 'low').length,
+    },
+  };
+
   const maxStatusCount = Math.max(...Object.values(stats.status_counts), 1);
-  const maxPriorityCount = Math.max(...Object.values(stats.priority_counts), 1);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-slate-900">
-      <header className="glass sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">TaskBoard Pro</h1>
-          <div className="flex items-center gap-4">
-            <nav className="flex gap-2">
-              <a href="/board" className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+    <div className="min-h-screen bg-devoteam-grey">
+      {/* Devoteam Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+          {/* Devoteam Logo */}
+          <div className="flex items-center gap-2">
+            <span className="text-devoteam-dark font-bold text-xl tracking-tight">devoteam</span>
+            <span className="text-devoteam-red font-bold text-xl">.</span>
+          </div>
+          
+          {/* Navigation */}
+          <div className="flex items-center gap-6">
+            <nav className="flex gap-1">
+              <a href="/board" className="px-4 py-2 text-devoteam-dark/60 hover:text-devoteam-dark hover:bg-devoteam-grey font-medium text-sm rounded transition-all">
                 Board
               </a>
-              <span className="px-4 py-2 text-white bg-white/10 rounded-lg">Dashboard</span>
+              <span className="px-4 py-2 bg-devoteam-red text-white font-semibold text-sm rounded">Dashboard</span>
             </nav>
-            <span className="text-white/80">Welcome, {user?.username}</span>
+            
+            <div className="h-6 w-px bg-gray-200" />
+            
+            <span className="text-devoteam-dark/70 text-sm">Welcome, <span className="font-semibold">{user?.username}</span></span>
             <button
               onClick={logout}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all"
+              className="px-4 py-2 text-devoteam-dark/70 hover:text-devoteam-dark hover:bg-devoteam-grey font-medium text-sm rounded transition-all"
             >
               Logout
             </button>
@@ -100,31 +108,32 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6 space-y-8">
         {error && (
-          <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-200">
+          <div className="p-4 bg-red-50 border border-devoteam-red/30 rounded text-devoteam-red text-sm">
             {error}
           </div>
         )}
 
-        <div className="glass-card rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-6">Total Tasks: {stats.total_tasks}</h2>
+        <div className="bg-white rounded-lg shadow-card p-6">
+          <h2 className="text-xl font-bold text-devoteam-dark mb-6">Total Tasks: {stats.total_tasks}</h2>
 
           <section className="mb-8">
-            <h3 className="text-lg font-semibold text-white/90 mb-4">Status Distribution</h3>
+            <h3 className="text-lg font-semibold text-devoteam-dark mb-4">Status Distribution</h3>
             <div className="space-y-3">
               {COLUMNS.map((col) => {
                 const count = stats.status_counts[col.id] || 0;
                 const pct = (count / maxStatusCount) * 100;
                 return (
                   <div key={col.id} className="flex items-center gap-4">
-                    <span className="w-24 text-white/70 text-sm">{STATUS_LABELS[col.id]}</span>
-                    <div className="flex-1 h-8 bg-white/10 rounded-lg overflow-hidden">
+                    <span className="w-24 text-gray-600 text-sm font-medium">{STATUS_LABELS[col.id]}</span>
+                    <div className="flex-1 h-8 bg-devoteam-grey rounded overflow-hidden">
                       <div
-                        className={`h-full bg-gradient-to-r ${STATUS_COLORS[col.id]} border-r transition-all duration-500 flex items-center justify-end pr-3`}
+                        className={`h-full ${STATUS_COLORS[col.id]} transition-all duration-500 flex items-center justify-end pr-3`}
                         style={{ width: `${pct}%` }}
                       >
-                        {count > 0 && <span className="text-white text-sm font-medium">{count}</span>}
+                        {count > 0 && <span className="text-white text-sm font-semibold">{count}</span>}
                       </div>
                     </div>
                   </div>
@@ -134,17 +143,21 @@ export default function DashboardPage() {
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold text-white/90 mb-4">Severity Heatmap</h3>
+            <h3 className="text-lg font-semibold text-devoteam-dark mb-4">Severity Heatmap</h3>
             <div className="grid grid-cols-3 gap-4">
               {(['high', 'medium', 'low'] as TaskPriority[]).map((priority) => {
                 const count = stats.priority_counts[priority] || 0;
                 return (
                   <div
                     key={priority}
-                    className={`glass-card rounded-xl p-6 text-center bg-gradient-to-br ${PRIORITY_COLORS[priority]} border ${PRIORITY_HEAT[priority]} transition-all hover:scale-105`}
+                    className={`rounded-lg p-6 text-center bg-devoteam-grey border-l-4 ${
+                      priority === 'high' ? 'border-l-devoteam-red' : 
+                      priority === 'medium' ? 'border-l-devoteam-dark' : 
+                      'border-l-gray-400'
+                    }`}
                   >
-                    <div className="text-4xl font-bold text-white mb-2">{count}</div>
-                    <div className="text-white/70 uppercase text-sm tracking-wide">
+                    <div className="text-4xl font-bold text-devoteam-dark mb-2">{count}</div>
+                    <div className="text-gray-500 uppercase text-sm tracking-wide font-medium">
                       {PRIORITY_LABELS[priority]}
                     </div>
                   </div>
