@@ -81,10 +81,13 @@ export default function DashboardPage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           {/* Devoteam Logo */}
-          <div className="flex items-center gap-2">
-            <span className="text-devoteam-dark font-bold text-xl tracking-tight">devoteam</span>
-            <span className="text-devoteam-red font-bold text-xl">.</span>
-          </div>
+          <a href="/board">
+            <img 
+              src="/assets/devoteam-logo.svg" 
+              alt="Devoteam" 
+              className="h-8 w-auto"
+            />
+          </a>
           
           {/* Navigation */}
           <div className="flex items-center gap-6">
