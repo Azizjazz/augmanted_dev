@@ -20,26 +20,26 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-devoteam-grey p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
-        {/* Devoteam Logo */}
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F8F9FA' }}>
+      <div className="bg-white rounded-lg p-8 w-full max-w-md" style={{ border: '1px solid #E5E7EB' }}>
+        {/* Devoteam Logo - Centered */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-devoteam-dark font-bold text-2xl tracking-tight">devoteam</span>
-            <span className="text-devoteam-red font-bold text-2xl">.</span>
-          </div>
-          <h2 className="text-xl font-semibold text-devoteam-dark">Sign In</h2>
+          <img 
+            src="/assets/devoteam-logo.png" 
+            alt="Devoteam" 
+            className="h-12 w-auto mx-auto mb-4"
+          />
         </div>
         
         {error && (
-          <div className="bg-red-50 border border-devoteam-red/30 rounded p-3 mb-4">
-            <p className="text-devoteam-red text-sm text-center font-medium">{error}</p>
+          <div className="mb-4 p-3 rounded" style={{ backgroundColor: '#FEF2F2', border: '1px solid #F22F46' }}>
+            <p className="text-center text-sm font-medium" style={{ color: '#F22F46' }}>{error}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="username" className="block text-sm font-semibold text-devoteam-dark mb-2">
+            <label htmlFor="username" className="block text-sm font-semibold mb-2" style={{ color: '#1A1A1A' }}>
               Username
             </label>
             <input
@@ -47,14 +47,15 @@ export default function LoginPage() {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 rounded border border-gray-200 text-devoteam-dark placeholder-gray-400 focus:outline-none focus:border-devoteam-dark focus:ring-1 focus:ring-devoteam-dark/20"
+              className="w-full px-4 py-3 rounded border text-sm"
+              style={{ borderColor: '#E5E7EB', color: '#1A1A1A' }}
               placeholder="Enter your username"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-semibold text-devoteam-dark mb-2">
+            <label htmlFor="password" className="block text-sm font-semibold mb-2" style={{ color: '#1A1A1A' }}>
               Password
             </label>
             <input
@@ -62,7 +63,8 @@ export default function LoginPage() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded border border-gray-200 text-devoteam-dark placeholder-gray-400 focus:outline-none focus:border-devoteam-dark focus:ring-1 focus:ring-devoteam-dark/20"
+              className="w-full px-4 py-3 rounded border text-sm"
+              style={{ borderColor: '#E5E7EB', color: '#1A1A1A' }}
               placeholder="Enter your password"
               required
             />
@@ -71,15 +73,15 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-devoteam-red hover:bg-red-600 text-white font-semibold rounded transition-colors disabled:opacity-50"
+            className="btn-primary w-full"
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
-        <p className="text-gray-500 text-center mt-6">
+        <p className="text-center mt-6 text-sm" style={{ color: '#6B7280' }}>
           Don&apos;t have an account?{' '}
-          <Link href="/register" className="text-devoteam-red hover:underline font-semibold">
+          <Link href="/register" className="font-semibold" style={{ color: '#F22F46' }}>
             Sign up
           </Link>
         </p>

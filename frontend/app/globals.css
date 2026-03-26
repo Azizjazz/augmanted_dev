@@ -4,8 +4,22 @@
   --devoteam-red: #F22F46;
   --devoteam-dark: #1A1A1A;
   --devoteam-grey: #F8F9FA;
+  --devoteam-border: #E5E7EB;
 }
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
+}
+
+.btn-primary {
+  background-color: #F22F46 !important;
+  color: white !important;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 12px 24px;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #F22F46 !important;
 }

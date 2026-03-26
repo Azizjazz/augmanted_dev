@@ -79,15 +79,17 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-devoteam-grey">
       {/* Devoteam Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
           {/* Devoteam Logo */}
-          <a href="/board">
-            <img 
-              src="/assets/devoteam-logo.png" 
-              alt="Devoteam" 
-              className="h-8 w-auto"
-            />
-          </a>
+          <div className="pl-2">
+            <a href="/board">
+              <img 
+                src="/assets/devoteam-logo.png" 
+                alt="Devoteam" 
+                className="h-12 w-auto"
+              />
+            </a>
+          </div>
           
           {/* Navigation */}
           <div className="flex items-center gap-6">

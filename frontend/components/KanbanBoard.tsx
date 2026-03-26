@@ -102,7 +102,7 @@ export default function KanbanBoard({ onAddTask }: KanbanBoardProps) {
           </div>
           <button
             onClick={onAddTask}
-            className="w-full mt-4 py-2.5 border border-dashed border-gray-300 text-gray-500 hover:text-devoteam-dark hover:border-devoteam-dark rounded text-sm font-medium transition-colors"
+            className="btn-primary w-full mt-4"
           >
             + Add Task
           </button>
